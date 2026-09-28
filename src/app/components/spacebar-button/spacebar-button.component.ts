@@ -67,8 +67,10 @@ export class SpacebarButtonComponent implements OnDestroy {
   }
 
   ngOnDestroy() {
-    document.removeEventListener('keydown', this.keydownHandler);
-    document.removeEventListener('keyup', this.keyupHandler);
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('keydown', this.keydownHandler);
+      document.removeEventListener('keyup', this.keyupHandler);
+    }
     if (this.pressTimer) {
       clearTimeout(this.pressTimer);
     }

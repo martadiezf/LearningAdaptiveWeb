@@ -23,7 +23,9 @@ export class TranslationService {
     setLanguage(lang: Lang): void {
         this.currentLang.set(lang);
         if (isPlatformBrowser(this.platformId)) {
-            localStorage.setItem(STORAGE_KEY, lang);
+            if (typeof localStorage !== 'undefined') {
+                localStorage.setItem(STORAGE_KEY, lang);
+            }
         }
     }
 

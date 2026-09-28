@@ -299,7 +299,9 @@ export class SectionsContainerComponent implements OnDestroy {
         container.addEventListener('wheel', this.wheelHandler, { passive: false });
         container.addEventListener('touchstart', this.touchStartHandler, { passive: true });
         container.addEventListener('touchend', this.touchEndHandler, { passive: true });
-        document.addEventListener('keydown', this.keyHandler);
+        if (typeof document !== 'undefined') {
+            document.addEventListener('keydown', this.keyHandler);    // línea 302
+        }
     }
 
     private onWheel(e: WheelEvent) {
@@ -476,6 +478,8 @@ export class SectionsContainerComponent implements OnDestroy {
         container.removeEventListener('wheel', this.wheelHandler);
         container.removeEventListener('touchstart', this.touchStartHandler);
         container.removeEventListener('touchend', this.touchEndHandler);
-        document.removeEventListener('keydown', this.keyHandler);
+        if (typeof document !== 'undefined') {
+            document.addEventListener('keydown', this.keyHandler);    // línea 302
+        }
     }
 }

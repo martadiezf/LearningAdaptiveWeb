@@ -70,6 +70,8 @@ export class CursorFollowerComponent implements OnDestroy {
   }
 
   ngOnDestroy() {
-    document.removeEventListener('mousemove', this.mouseMoveHandler);
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('mousemove', this.mouseMoveHandler);
+    }
   }
 }
