@@ -12,7 +12,6 @@ import {
   PLATFORM_ID,
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import * as L from 'leaflet';
 
 export interface MapMarker {
   id: string;
@@ -48,13 +47,23 @@ export class InteractiveMapComponent implements AfterViewInit, OnDestroy {
   private activeMarkerEl: HTMLElement | null = null;
   private isBrowser: boolean;
   private resizeObserver: ResizeObserver | null = null;
+  private L: any = null;
+  private destroyed = false;
+
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
-  ngAfterViewInit(): void {
+async ngAfterViewInit(): Promise<void> {
     if (!this.isBrowser) return;
+
+    // Load Leaflet only in the browser
+    const leaflet: any = await import('leaflet');
+    this.L = leaflet.default ?? leaflet;
+
+    // The component may have been destroyed while Leaflet was loading
+    if (this.destroyed) return;
 
     const container = this.mapContainerRef()?.nativeElement;
     if (!container) return;
@@ -77,6 +86,7 @@ export class InteractiveMapComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
       this.resizeObserver = null;
@@ -92,7 +102,7 @@ export class InteractiveMapComponent implements AfterViewInit, OnDestroy {
     if (!container) return;
 
     // Create map centered on the world
-    this.map = L.map(container, {
+    this.map = this.L.map(container, {
       center: [25, 10],
       zoom: 2,
       minZoom: 1,
@@ -103,7 +113,7 @@ export class InteractiveMapComponent implements AfterViewInit, OnDestroy {
     });
 
     // Dark CARTO tile layer (matching the reference image)
-    L.tileLayer(
+    this.L.tileLayer(
       'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
       {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
@@ -131,17 +141,17 @@ export class InteractiveMapComponent implements AfterViewInit, OnDestroy {
       const lng = (markerData.x / 100) * 360 - 180;
 
       // Create custom div icon
-      const icon = L.divIcon({
+      const icon = this.L.divIcon({
         className: 'custom-marker',
         html: `<div class="marker-pin" data-id="${markerData.id}"></div>`,
         iconSize: [14, 14],
         iconAnchor: [7, 7],
       });
 
-      const leafletMarker = L.marker([lat, lng], { icon }).addTo(this.map);
+      const leafletMarker = this.L.marker([lat, lng], { icon }).addTo(this.map);
 
       leafletMarker.on('click', (e: any) => {
-        L.DomEvent.stopPropagation(e);
+        this.L.DomEvent.stopPropagation(e);
         this.onMarkerClick(markerData, leafletMarker);
       });
 
